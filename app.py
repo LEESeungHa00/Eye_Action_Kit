@@ -5,8 +5,8 @@ import datetime
 
 # 페이지 설정
 st.set_page_config(
-    page_title="Tridge Action Kit",
-    page_icon="🧭",
+    page_title="Quick Start Tridge Eye",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -50,7 +50,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 사이드바 네비게이션
-st.sidebar.title("🧭 Tridge Action Kit")
+st.sidebar.title("🚀Quick Start Tridge Eye")
 st.sidebar.markdown("---")
 page = st.sidebar.radio("도구 선택", ["Tool 1. 협상 & 타이밍 마스터", "Tool 2. 파트너 검증기", "📘 사용 가이드"])
 
