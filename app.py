@@ -5,7 +5,7 @@ import datetime
 
 # 페이지 설정
 st.set_page_config(
-    page_title="Quick Start Tridge Eye"",
+    page_title="Quick Start Tridge Eye",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
