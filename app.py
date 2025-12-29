@@ -5,7 +5,7 @@ import datetime
 
 # 페이지 설정
 st.set_page_config(
-    page_title="Quick Start Tridge Eye",
+    page_title="Quick Start Tridge Eye"",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -43,6 +43,13 @@ st.markdown("""
         font-weight: bold;
         margin-bottom: 20px;
     }
+    .analysis-box {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 5px solid #004e66;
+        margin-top: 10px;
+    }
     h1, h2, h3 {
         color: #004e66;
     }
@@ -50,14 +57,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 사이드바 네비게이션
-st.sidebar.title("🚀Quick Start Tridge Eye")
+st.sidebar.title("🚀 Quick Start Tridge Eye")
 st.sidebar.markdown("---")
 page = st.sidebar.radio("도구 선택", ["Tool 1. 협상 & 타이밍 마스터", "Tool 2. 파트너 검증기", "📘 사용 가이드"])
 
 # --- Tool 1: 협상 & 타이밍 마스터 ---
 if page == "Tool 1. 협상 & 타이밍 마스터":
     st.title("🤝 Negotiation & Timing Master")
-    st.markdown("##### 시장의 흐름과 맥락을 읽어 협상의 주도권을 잡으세요.")
+    st.markdown("##### 시장 데이터를 기반으로 적정 가격(Should-Cost)을 산출하고 협상 전략을 수립합니다.")
     
     col1, col2 = st.columns([1, 1.2])
 
@@ -76,7 +83,7 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
 
         with st.expander("📝 Section 3. 공급사 제안 (Supplier)", expanded=True):
             offer_price = st.number_input("공급사 제안가 ($/kg)", min_value=0.0, value=0.58, format="%.2f")
-            supplier_avg_margin = st.slider("공급사 평소 프리미엄 (%)", 0, 20, 5, help="시장가 대비 이 공급사가 통상적으로 더 받는 비율")
+            supplier_avg_margin = st.slider("공급사 인정 프리미엄 (%)", 0, 20, 5, help="브랜드 가치, 품질 차이 등으로 시장가보다 더 쳐줄 수 있는 비율")
             
         with st.expander("📝 Section 4. 뉴스 리스크 (Context)", expanded=True):
             risk_factors = st.multiselect("🚨 가격 인상/리스크 요인 (악재)", 
@@ -92,9 +99,9 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
             
             # --- 로직 엔진 (Logic Engine) ---
             # 1. 가격 차이 분석
-            fair_price = market_avg_price * (1 + supplier_avg_margin/100)
-            price_gap = offer_price - fair_price
-            price_gap_pct = (price_gap / fair_price) * 100 if fair_price > 0 else 0
+            fair_price = market_avg_price * (1 + supplier_avg_margin/100) # 적정가 (시장가 + 프리미엄)
+            gap = offer_price - fair_price # 총 격차
+            gap_pct = (gap / fair_price) * 100 if fair_price > 0 else 0
             
             # 2. 케이스 분류
             case = "Normal"
@@ -110,58 +117,46 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
             
             # Case Logic Implementation
             if has_supply_risk or "▲ 급등 (Surge)" in market_trend:
-                # Case 3: 구조적 급등 (물량 확보 우선)
                 case = "Supply Shortage"
                 verdict_color = "#007bff" # Blue
                 verdict_title = "🔵 물량 선확보 (Secure Volume)"
                 verdict_desc = "가격 협상보다 물량 확보가 시급합니다. 지금 안 사면 나중에 못 살 수 있습니다."
                 target_price = offer_price # 수용
-                script_type = "secure"
                 
             elif has_logistics_risk:
-                # Case 2: 리스크형 인상 (조건부 협상)
                 case = "Logistics Risk"
                 verdict_color = "#ffc107" # Yellow
                 verdict_title = "🟡 조건부 협상 (Conditional)"
                 verdict_desc = "가격 거품이 있으나 납기 리스크가 더 큽니다. 단가를 조금 양보하고 '선적 보장'을 받으세요."
                 target_price = fair_price * 1.05 # 약간 양보
-                script_type = "risk"
 
-            elif "▼ 하락 (Drop)" in market_trend and price_gap_pct > 10:
-                 # Case 1: 탐욕형 인상 (강력 인하)
+            elif "▼ 하락 (Drop)" in market_trend and gap_pct > 10:
                 case = "Greed"
                 verdict_color = "#dc3545" # Red
                 verdict_title = "🔴 강력 인하 요구 (Strong Push)"
                 verdict_desc = "명분 없는 인상입니다. 시장 트렌드와 미래 전망 모두 귀하의 편입니다."
                 target_price = market_avg_price # 프리미엄 제거 요구
-                script_type = "hardball"
                 
             elif "▼ 하락 (Drop)" in market_trend and "↗️ 상승 (Rise)" in forecast_trend:
-                # Case 4: 저점 매수 (골든 타임)
                 case = "Golden Time"
                 verdict_color = "#28a745" # Green
                 verdict_title = "🟢 골든 타임 (Strike Price)"
                 verdict_desc = "지금이 최저가일 확률이 높습니다. 장기 계약으로 전환하세요."
                 target_price = offer_price # 현재가 락인
-                script_type = "lockin"
 
             elif "↘️ 하락 (Fall)" in forecast_trend or has_bumper:
-                # Case 5: 하락장 진입 (관망)
                 case = "Bear Market"
                 verdict_color = "#6c757d" # Gray
                 verdict_title = "⚪ 구매 보류 (Wait & See)"
                 verdict_desc = "떨어지는 칼날입니다. 급한 물량이 아니라면 구매를 미루세요."
                 target_price = market_avg_price * 0.8 # 던지기 유도
-                script_type = "delay"
                 
             else:
-                # Default: 일반 협상
                 case = "General"
                 verdict_color = "#17a2b8" # Teal
                 verdict_title = "⚖️ 일반 협상 (Negotiate)"
                 verdict_desc = "통상적인 수준의 줄다리기가 필요합니다."
                 target_price = fair_price
-                script_type = "general"
 
             # --- 결과 화면 출력 ---
             st.markdown(f"""
@@ -183,24 +178,94 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
 
             st.markdown("---")
             
-            # 📊 가격 구조 정밀 분석 (Waterfall Chart)
-            st.subheader("📊 가격 구조 분석")
+            # 📊 가격 구조 정밀 분석 (Gap Analysis)
+            st.subheader("📊 가격 적정성 분석 (Gap Analysis)")
             
-            fig = go.Figure(go.Waterfall(
-                name = "Price Structure", orientation = "v",
-                measure = ["relative", "relative", "relative", "total"],
-                x = ["시장 평균가", "인정 프리미엄", "설명안되는 거품", "제안가"],
-                textposition = "outside",
-                text = [f"${market_avg_price}", f"+${fair_price - market_avg_price:.2f}", f"+${price_gap:.2f}", f"${offer_price}"],
-                y = [market_avg_price, fair_price - market_avg_price, price_gap, 0],
-                connector = {"line":{"color":"rgb(63, 63, 63)"}},
-                decreasing = {"marker":{"color":"Maroon", "line":{"color":"red", "width":2}}},
-                increasing = {"marker":{"color":"#28a745"}},
-                totals = {"marker":{"color":"#004e66"}}
+            # 데이터 준비 for Stacked Bar
+            premium_amt = market_avg_price * (supplier_avg_margin/100)
+            overprice_amt = max(0, offer_price - fair_price)
+            
+            # Bar 1: 적정 가치 모델 (Should-Cost Model)
+            # 구성: 시장가(Base) + 인정 프리미엄(Premium) + 초과 마진(Gap)
+            # Bar 2: 공급사 제안가 (Supplier Offer)
+            
+            fig = go.Figure()
+
+            # 1. Market Base (시장 기준가) - 회색
+            fig.add_trace(go.Bar(
+                name='Market Base (시장가)',
+                x=['가격 구조 분석'], y=[market_avg_price],
+                marker_color='#adb5bd',
+                text=f"${market_avg_price}", textposition='auto'
             ))
-            fig.update_layout(title = "제안 가격 분해 (Price Decomposition)", showlegend = False, height=300)
+
+            # 2. Premium (인정 프리미엄) - 녹색
+            fig.add_trace(go.Bar(
+                name='Allowed Premium (인정 마진)',
+                x=['가격 구조 분석'], y=[premium_amt],
+                marker_color='#28a745',
+                text=f"+${premium_amt:.2f}", textposition='auto'
+            ))
+            
+            # 3. Gap (협상 대상) - 빨간색 (제안가가 적정가보다 높을 때만 표시)
+            if overprice_amt > 0:
+                fig.add_trace(go.Bar(
+                    name='Negotiation Target (거품/조정대상)',
+                    x=['가격 구조 분석'], y=[overprice_amt],
+                    marker_color='#dc3545',
+                    pattern_shape="/", # 빗금 처리로 강조
+                    text=f"GAP: ${overprice_amt:.2f}", textposition='auto'
+                ))
+            
+            # Layout 설정
+            fig.update_layout(
+                barmode='stack',
+                title_text="적정 가격 모델링 (Should-Cost Model)",
+                yaxis_title="단가 ($/kg)",
+                height=400,
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+            
+            # 제안가 라인 추가 (점선)
+            fig.add_shape(type="line",
+                x0=-0.5, y0=offer_price, x1=0.5, y1=offer_price,
+                line=dict(color="Black", width=2, dash="dash"),
+            )
+            fig.add_annotation(
+                x=0.5, y=offer_price,
+                text=f"공급사 제안가: ${offer_price}",
+                showarrow=False,
+                yshift=10, xshift=60
+            )
+
             st.plotly_chart(fig, use_container_width=True)
 
+            # 📝 전문 분석 리포트 (Text Analysis)
+            st.markdown("#### 💡 분석 리포트")
+            
+            analysis_text = f"""
+            **1. 시장 기준 (Market Base):** 현재 시장 평균가는 **${market_avg_price}**입니다. 이는 협상의 출발점(Baseline)입니다.<br>
+            **2. 인정 프리미엄 (Premium):** 귀사는 공급사의 브랜드 및 품질 가치로 **{supplier_avg_margin}% (+${premium_amt:.2f})**를 인정했습니다.<br>
+            """
+            
+            if overprice_amt > 0:
+                gap_percentage = (overprice_amt / offer_price) * 100
+                analysis_text += f"""
+                <span style='color: #dc3545; font-weight: bold;'>3. 협상 타겟 (Negotiation Target):</span> 
+                공급사의 제안가(${offer_price})는 귀하가 산출한 적정가(${fair_price:.2f})보다 **${overprice_amt:.2f}** 높습니다.<br>
+                이는 전체 제안 금액의 **{gap_percentage:.1f}%**에 달하며, 설명되지 않는 초과 마진으로 추정됩니다.
+                이 부분(Red Zone)을 제거하는 것이 이번 협상의 핵심 목표입니다.
+                """
+            else:
+                analysis_text += f"""
+                <span style='color: #28a745; font-weight: bold;'>3. 가격 적정성 (Fair Price):</span> 
+                공급사의 제안가(${offer_price})는 귀하가 산출한 적정가(${fair_price:.2f}) 범위 내에 있습니다.
+                가격보다는 물량 확보나 결제 조건 등 비가격 조건 협상에 집중하는 것이 유리합니다.
+                """
+                
+            st.markdown(f"<div class='analysis-box'>{analysis_text}</div>", unsafe_allow_html=True)
+            
             # 🔮 What-If
             with st.expander("🔮 왓 이프 시뮬레이션 (What-If: 대안 분석)"):
                 st.write(f"**Option 1 (대기):** 2주 대기 시 예상 가격 **${forecast_price:.2f}** (Eye Echo 전망)")
