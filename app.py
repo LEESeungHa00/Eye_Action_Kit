@@ -212,8 +212,10 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
                 fig.add_trace(go.Bar(
                     name='Negotiation Target (거품/조정대상)',
                     x=['가격 구조 분석'], y=[overprice_amt],
-                    marker_color='#dc3545',
-                    pattern_shape="/", # 빗금 처리로 강조
+                    marker=dict(
+                        color='#dc3545',
+                        pattern=dict(shape="/")
+                    ),
                     text=f"GAP: ${overprice_amt:.2f}", textposition='auto'
                 ))
             
