@@ -213,8 +213,7 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
                     name='Negotiation Target (거품/조정대상)',
                     x=['가격 구조 분석'], y=[overprice_amt],
                     marker=dict(
-                        color='#dc3545',
-                        pattern=dict(shape="/")
+                        color='#dc3545'
                     ),
                     text=f"GAP: ${overprice_amt:.2f}", textposition='auto'
                 ))
