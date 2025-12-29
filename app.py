@@ -244,32 +244,63 @@ if page == "Tool 1. 협상 & 타이밍 마스터":
             }
             st.table(pd.DataFrame(trend_data))
 
-            # --- 3. 가격 구조 정밀 분석 (The Logic - Waterfall) ---
+            # --- 3. 가격 구조 정밀 분석 (The Logic - Manual Waterfall) ---
             st.markdown("#### 💰 가격 포지셔닝 (Price Positioning)")
             
-            # Waterfall Data
-            fig = go.Figure(go.Waterfall(
-                name = "Price Structure", orientation = "v",
-                measure = ["relative", "relative", "relative", "total"],
-                x = ["시장 평균가 (Standard)", "인정 프리미엄 (Premium)", "설명 안되는 마진 (Bubble)", "최종 제안가 (Offer)"],
-                textposition = "outside",
-                text = [f"${market_avg_price}", f"+${fair_price - market_avg_price:.2f}", f"+${gap:.2f}", f"${offer_price}"],
-                y = [market_avg_price, fair_price - market_avg_price, gap, 0],
-                connector = {"line":{"color":"rgb(63, 63, 63)"}},
-                decreasing = {"marker":{"color":"#28a745"}},
-                increasing = {"marker":{"color":"#ffc107"}}, # 프리미엄 등은 노란색
-                totals = {"marker":{"color":"#004e66"}}
+            # Plotly의 go.Waterfall에서 개별 색상 제어가 어려우므로, 
+            # go.Bar를 사용하여 Waterfall 형태를 직접 구현합니다.
+            
+            fig = go.Figure()
+            
+            # 1. Market Base (시장 평균가) - 회색/Standard
+            fig.add_trace(go.Bar(
+                name="시장 평균가",
+                x=["시장 평균가 (Standard)"], 
+                y=[market_avg_price],
+                marker_color="#adb5bd", # Gray
+                text=f"${market_avg_price:.2f}", 
+                textposition='auto'
             ))
             
-            # 색상 커스터마이징: Bubble은 빨간색으로 강조
-            colors = ["#adb5bd", "#28a745", "#dc3545" if gap > 0 else "#28a745", "#004e66"]
-            fig.data[0].marker.color = colors
+            # 2. Premium (인정 프리미엄) - 초록색/Yellowish Green (Base 위로 쌓임)
+            fig.add_trace(go.Bar(
+                name="인정 프리미엄",
+                x=["인정 프리미엄 (Premium)"], 
+                y=[fair_price - market_avg_price],
+                base=[market_avg_price], # 시작점
+                marker_color="#28a745", # Green (Positive/Allowed)
+                text=f"+${fair_price - market_avg_price:.2f}", 
+                textposition='auto'
+            ))
+            
+            # 3. Bubble (설명 안되는 마진) - 빨간색 (Fair Price 위로 쌓임)
+            if gap > 0:
+                fig.add_trace(go.Bar(
+                    name="설명 안되는 마진",
+                    x=["설명 안되는 마진 (Bubble)"], 
+                    y=[gap],
+                    base=[fair_price], # 시작점
+                    marker_color="#dc3545", # Red (Negative/Warning)
+                    text=f"+${gap:.2f}", 
+                    textposition='auto'
+                ))
+            
+            # 4. Offer (최종 제안가) - 파란색/Total
+            fig.add_trace(go.Bar(
+                name="최종 제안가",
+                x=["최종 제안가 (Offer)"], 
+                y=[offer_price],
+                marker_color="#004e66", # Blue (Total)
+                text=f"${offer_price:.2f}", 
+                textposition='auto'
+            ))
             
             fig.update_layout(
                 title = "가격 구조 분해 (Logic of Price)",
                 showlegend = False,
                 height=350,
-                margin=dict(l=20, r=20, t=40, b=20)
+                margin=dict(l=20, r=20, t=40, b=20),
+                yaxis=dict(title="단가 ($/kg)")
             )
             st.plotly_chart(fig, use_container_width=True)
             
